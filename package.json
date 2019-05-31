@@ -1,0 +1,26 @@
+{
+  "name": "jsl",
+  "version": "1.0.0",
+  "description": "JSON Stylesheet transformation processor like XSL but for JSON",
+  "main": "index.js",
+  "scripts": {
+    "test": "node example.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comm644/jsl.git"
+  },
+  "keywords": [
+    "XSL",
+    "XSLT",
+    "JSL",
+    "JSON",
+    "stylesheet"
+  ],
+  "author": "Alexey V. Vasilyev",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/comm644/jsl/issues"
+  },
+  "homepage": "https://github.com/comm644/jsl#readme"
+}
