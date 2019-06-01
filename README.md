@@ -43,7 +43,7 @@ console.log( jsl.applyForAll( null, data.items ) );
 
 JSL chooses the template with stronger condition like this: "x.a == 1" less strong then "(x.a == 1 && x.b == 2)"
 
-
+For details see [example.js](example.js)
 
 
 
