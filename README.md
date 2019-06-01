@@ -11,29 +11,34 @@ I prefer to use XSLT as template engine, because i can replace any template just
 
 1. You  have some data on JS:
 
-var data = {
+<code>
+ var data = {
 	items : [
 		{ a : 1, b :2, items: [  1, 2, 3 ] },
 		{ a : 1},
 	]
-}
+ }
+</code>
 
 
 2. And you have some templates
 
-jsl.match(null, (x) => eq( x.a, 1), function(node){ 
+<code>
+ jsl.match( (x) => eq( x.a, 1), function(node){ 
 	return "this is A=1" );
-});
+ });
 
-jsl.match(null, (x) => and( eq( x.a, 1), eq(x.b, 2) ), (node) => {
-  return "this is A=1, B=2 " + node.a );
-})
+ jsl.match((x) => and( eq( x.a, 1), eq(x.b, 2) ), (node) => {
+   return "this is A=1, B=2 " + node.a );
+ })
+</code>
 
 3. Apply templates to data
 
 console.log( jsl.applyForAll( null, data.items ) ); 
 
 JSL had choose the template with stronger condition like this: "x.a == 1" less strong then "(x.a == 1 && x.b == 2)"
+
 
 
 
