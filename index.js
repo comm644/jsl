@@ -1,7 +1,17 @@
 
+function JSLContext()
+{
+	this.position = 0;
+	this.nodes = [];
+}
+
 
 function JSLProcessor()
 {
+	var exprs = {};
+	var contextStack = [];
+	var context = new JSLContext();
+
 	this.valueOf = function( x ) {
 		if ( typeof( x ) !== "function" ) return x;
 		
@@ -14,7 +24,16 @@ function JSLProcessor()
 	};
 	var valueOf = this.valueOf;
 	
-	var exprs = {};
+	this.position = function(){
+		return context.position;
+	}
+	this.isLast = function(){
+		return context.position === context.nodes.length;
+	}
+	this.isFirst = function(){
+		return context.position === 0;
+	}
+	
 	this.match = function(mode, expr, method)
 	{	
 		if ( exprs[mode] === undefined ) {
@@ -24,7 +43,16 @@ function JSLProcessor()
 	};
 
 	this.applyForAll = function( mode, nodes ) {
-		return nodes.map( x => this.apply(mode, x ) )
+		contextStack.push(context);
+		context = new JSLContext();
+		context.nodes = nodes; 
+		
+		var result =  nodes.map( (x, idx) => { 
+			context.position = idx;
+			return this.apply(mode, x ); 
+		});
+		context = contextStack.pop();
+		return result;
 	};
 	this.apply = function(mode, node){
 		var tmpls = exprs[mode];
@@ -35,6 +63,9 @@ function JSLProcessor()
 			var current = tmpls[i];
 			
 			var expr = current.expr(node);
+			if ( typeof(expr) === "boolean" ) {
+				expr = { result : expr, rank : 1 };
+			}
 			
 			if ( !expr.result )  continue;
 			if  (expr.rank <= rank ) continue;
