@@ -83,9 +83,19 @@ jsl.match( (x) => jsl.name() == 'items', node => {
 	
 });
 
+jsl.match( 'param', node => {
+	return { "case" : "match by nodeName", 
+		value: jsl.apply( node ) 
+	};
+	
+});
+jsl.match( (node) =>  (/boolean|number|string/).test(typeof node), function(node){ 
+	return node;
+});
+
 jsl.match( any, function(node){ 
 	return { "case" : "match any node, mode=null", 
-		value: " any item "+ node.a, 
+		node: node, 
 		items: jsl.apply( 'item-object', node.items) 
 	};
 });
@@ -97,9 +107,118 @@ var data = {
 		{ a : 2},
 		{ a : 3, items: [ 4, 5, 6] },
 		{ a : 4, c: 5, d: "value"},
-	]
+	],
+	param: 'value'
+		
+	
 }
 
 
 console.log( JSON.stringify( jsl.apply( data ), null, "  " )); //the same as previous
+
+
+/**
+Result:
+
+{
+  "items": {
+    "case": "match by name(), mode=null",
+    "items": [
+      {
+        "case": "x.a == 1 && x.b == 2  - match stronger condition",
+        "definedVaue": 1,
+        "position": 0,
+        "items": [
+          {
+            "case": "match by value",
+            "item": 1,
+            "index": 0,
+            "isLast": false,
+            "isFirst": true
+          },
+          {
+            "case:": "match any node",
+            "value": 2,
+            "index": 1
+          },
+          {
+            "case": "match by position()",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "case": "x.a == 1",
+        "definedVaue": 1,
+        "position": 1
+      },
+      {
+        "case": "match via eq() ",
+        "position": 2
+      },
+      {
+        "case": "match any node, mode=null",
+        "node": {
+          "a": 3,
+          "items": [
+            4,
+            5,
+            6
+          ]
+        },
+        "items": [
+          {
+            "parent": 3,
+            "node": 4,
+            "case": "match by parent()"
+          },
+          {
+            "parent": 3,
+            "node": 5,
+            "case": "match by parent()"
+          },
+          {
+            "parent": 3,
+            "node": 6,
+            "case": "match by parent()"
+          }
+        ]
+      },
+      {
+        "case": "match via node(), mode=null",
+        "value": {
+          "a": 4,
+          "c": 5,
+          "d": "value"
+        },
+        "values": {
+          "a": {
+            "case": "process object member, , mode=show-value",
+            "name": "a",
+            "position": 1,
+            "value": 4
+          },
+          "c": {
+            "case": "process object member, , mode=show-value",
+            "name": "c",
+            "position": 2,
+            "value": 5
+          },
+          "d": {
+            "case": "process object member, , mode=show-value",
+            "name": "d",
+            "position": 3,
+            "value": "value"
+          }
+        }
+      }
+    ]
+  },
+  "param": {
+    "case": "match by nodeName",
+    "value": "value"
+  }
+}
+
+*/
 

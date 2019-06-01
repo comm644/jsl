@@ -78,6 +78,11 @@ function JSLProcessor()
 			method = arguments['1'];
 			mode = null;
 		}
+		if ( typeof expr === "string" ) {
+			var name = expr;
+			expr = (x) => this.name() ===  name;
+		}
+		
 		
 		if ( exprs[mode] === undefined ) {
 			 exprs[mode] = [];
@@ -105,6 +110,9 @@ function JSLProcessor()
 				++idx;
 				result[name] = this.applyForNode(mode, nodes[name], idx, name); 
 			}
+		}
+		else {
+			result = this.applyForNode(mode, nodes, 0, 'object'); ;
 		}
 		context = contextStack.pop();
 		return result;
