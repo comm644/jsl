@@ -1,15 +1,19 @@
 
-function JSLContext(parent, nodes, position)
+function JSLContext(parent, nodes, position, name)
 {
 	const _parent = parent;
 	const _nodes = nodes;
 	const _position = position;
+	const _name = name;
 	
 	this.nodes = function(){
 		return _nodes;
 	}
 	this.node = function(){
 		return _nodes;
+	}
+	this.name = function(){
+		return _name;
 	}
 	this.parent = function(){
 		return _parent;
@@ -60,29 +64,54 @@ function JSLProcessor()
 	this.parent = function() {
 		return context.parent();
 	}
+	this.node = function() {
+		return context.node();
+	}
+	this.name = function() {
+		return context.name();
+	}
 	
-	this.match = function(mode, expr, method)
+	this.match = function(mode=null, expr, method)
 	{	
+		if ( arguments.length === 2) {
+			expr = arguments['0'];
+			method = arguments['1'];
+			mode = null;
+		}
+		
 		if ( exprs[mode] === undefined ) {
 			 exprs[mode] = [];
 		}
 		exprs[mode].push( { expr: expr, method: method } );
 	};
 
-	this.applyForAll = function( mode, nodes ) {
+	this.apply = function( mode, nodes ) {
+		if ( arguments.length === 1) {
+			nodes = arguments[0];
+			mode = null;
+		}
 		contextStack.push(context);
 		context = new JSLContext(context, nodes);
-		
-		var result =  nodes.map( (x, idx) => { 
-			var rc =  this.apply(mode, x, idx ); 
-			return rc;
-		});
+		if ( Array.isArray(nodes) ) {
+			var result =  nodes.map( (x, idx) => { 
+				var rc =  this.applyForNode(mode, x, idx ); 
+				return rc;
+			});
+		}
+		else if ( nodes && typeof nodes === 'object' && nodes.constructor === Object ) {
+			var result = {};
+			var idx = 0;
+			for( var name in nodes ) {
+				++idx;
+				result[name] = this.applyForNode(mode, nodes[name], idx, name); 
+			}
+		}
 		context = contextStack.pop();
 		return result;
 	};
-	this.apply = function(mode, node, idx=0){
+	this.applyForNode = function(mode, node, idx=0, name='object'){
 		contextStack.push(context);
-		context = new JSLContext(context, node, idx);
+		context = new JSLContext(context, node, idx, name);
 	
 		var tmpls = exprs[mode];
 		var rank = -1;
