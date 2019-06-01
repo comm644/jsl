@@ -1,8 +1,32 @@
 
-function JSLContext()
+function JSLContext(parent, nodes, position)
 {
-	this.position = 0;
-	this.nodes = [];
+	const _parent = parent;
+	const _nodes = nodes;
+	const _position = position;
+	
+	this.nodes = function(){
+		return _nodes;
+	}
+	this.node = function(){
+		return _nodes;
+	}
+	this.parent = function(){
+		return _parent;
+	}
+	this.position = function(){
+		return _position;
+	}
+	this.isLast = function(){
+		return _position === _nodes.length;
+	}
+	this.isFirst = function(){
+		return _position === 0;
+	}
+	this.toString = function(){
+		return JSON.stringify({ position: position, nodes: nodes});
+	}
+	
 }
 
 
@@ -10,7 +34,7 @@ function JSLProcessor()
 {
 	var exprs = {};
 	var contextStack = [];
-	var context = new JSLContext();
+	var context = new JSLContext(null, null, 0);
 
 	this.valueOf = function( x ) {
 		if ( typeof( x ) !== "function" ) return x;
@@ -25,13 +49,16 @@ function JSLProcessor()
 	var valueOf = this.valueOf;
 	
 	this.position = function(){
-		return context.position;
+		return context.position();
 	}
 	this.isLast = function(){
-		return context.position === context.nodes.length;
+		return context.isLast();
 	}
 	this.isFirst = function(){
-		return context.position === 0;
+		return context.isFirst();
+	}
+	this.parent = function() {
+		return context.parent();
 	}
 	
 	this.match = function(mode, expr, method)
@@ -44,20 +71,22 @@ function JSLProcessor()
 
 	this.applyForAll = function( mode, nodes ) {
 		contextStack.push(context);
-		context = new JSLContext();
-		context.nodes = nodes; 
+		context = new JSLContext(context, nodes);
 		
 		var result =  nodes.map( (x, idx) => { 
-			context.position = idx;
-			return this.apply(mode, x ); 
+			var rc =  this.apply(mode, x, idx ); 
+			return rc;
 		});
 		context = contextStack.pop();
 		return result;
 	};
-	this.apply = function(mode, node){
+	this.apply = function(mode, node, idx=0){
+		contextStack.push(context);
+		context = new JSLContext(context, node, idx);
+	
 		var tmpls = exprs[mode];
-		var rank = 0;
-		var selected = { rank : 0, method : (node)=> node };
+		var rank = -1;
+		var selected = { rank : -1, method : (node)=> node };
 		
 		for( var i in tmpls ) {
 			var current = tmpls[i];
@@ -72,11 +101,13 @@ function JSLProcessor()
 			rank = expr.rank;
 			selected = current;
 		}
-		return selected.method(node);
+		var result  = selected.method(node);
+		context = contextStack.pop();
+		return result;
 	};
 	this.any  = function()
 	{
-		return { rank: 1, result: true };
+		return { rank: 0, result: true };
 	};
 	this.eq  = function(x, y)
 	{
